@@ -1,5 +1,5 @@
 import numpy as np
-import sys
+
 
 class OLS:
     """ Class for a general OLS regression method """
@@ -62,34 +62,6 @@ class OLS:
         """ Calls the predict method """
         return self.predict(X)
 
-
-    def MSE(self, y = None):
-        """ Calculate and return the MSE of the prediction and the original
-        target values y
-
-        Keyword arguments:
-        y :     Override the target values to compare with if you wish to
-                compare the prediction with a different set of data
-
-        Returns:
-        mse :   Mean squared error of the prediction vs. the target values
-        """
-        if y is None:
-            y = self._y
-
-        if len(y.shape) > 1:
-            y = y.ravel()
-
-        y_t = self.y_tilde
-        if len(y_t.shape) > 1:
-            y_t = y_t.ravel()
-
-        n = len(y_t)
-
-        d2 = (y - y_t)**2
-        mse = 1/n * np.sum(d2)
-
-        return mse
 
     def R2(self, y = None):
         """ Calculate and return the R2 score of the prediction and the original
