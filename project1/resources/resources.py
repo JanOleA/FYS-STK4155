@@ -84,11 +84,8 @@ def variance(y_model):
     Returns:
     var :       the variance
     """
-    if len(y_model.shape) > 1:
-        y_model.ravel()
 
-    return np.sum((y_model - np.mean(y_model))**2)/len(y_model)
-    #return np.mean(y_model**2) - np.mean(y_model)**2
+    return np.sum((y_model - np.mean(y_model))**2)/np.size(y_model)
 
 
 def bias(y_data, y_model):
@@ -102,10 +99,5 @@ def bias(y_data, y_model):
     Returns:
     bias :      value of the bias
     """
-    if len(y_data.shape) > 1:
-        y_data = y_data.ravel()
 
-    if len(y_model.shape) > 1:
-        y_model = y_model.ravel()
-
-    return np.sum((y_data - np.mean(y_model))**2)/len(y_data)
+    return np.sum((y_data - np.mean(y_model))**2)/np.size(y_model)

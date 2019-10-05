@@ -3,14 +3,15 @@ order complexity, using training/test data and k-fold resampling.
 """
 
 import sys
-sys.path.insert(1, 'resources/')
+sys.path.insert(1, '../resources/')
 
 from franke import FrankeFunction, plot_franke
-from OLS import *
+from regression import *
 from resources import *
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, KFold
+from sklearn.preprocessing import PolynomialFeatures
 
 np.random.seed(1)
 
@@ -21,11 +22,11 @@ x_m, y_m = np.meshgrid(x, y)
 k = 5
 
 z = FrankeFunction(x_m, y_m)
-z_noise = (z + np.random.normal(scale = 1, size = (N, N)))
+z_noise = (z + np.random.normal(scale = 0.3, size = (N, N)))
 
 m_list = [2, 3, 4, 5]
 
-kfold = KFold(n_splits = k, shuffle = True, random_state = 5)
+kfold = KFold(n_splits = k, shuffle = True)
 
 print("  m |     MSE    |    R2   |   var   |   bias  | ")
 print("#################################################")
@@ -36,7 +37,6 @@ bias_list = []
 
 for m in m_list:
     X = design_matrix(x_m, y_m, m)
-
     #X_train, X_test, z_train, z_test = train_test_split(X, z_noise.ravel(), test_size = 0.2)
 
     MSE_ = 0
@@ -50,12 +50,12 @@ for m in m_list:
     for train_inds, test_inds in kfold.split(X):
         X_train = X[train_inds]
         X_test = X[test_inds]
-        z_train = z.ravel()[train_inds]
-        z_test = z.ravel()[test_inds]
+        z_train = z_noise.ravel()[train_inds]
+        z_test = z_noise.ravel()[test_inds]
 
-        reg_fit = OLS(X_train, z_train)
-        betas[i] = reg_fit.beta
-        z_predict = reg_fit(X_test)
+        model = Ridge(X_train, z_train, l=1e-8)
+        betas[i] = model.beta
+        z_predict = model(X_test)
 
         MSE_ += MSE(z_test, z_predict)
         R2_ += R2(z_test, z_predict)

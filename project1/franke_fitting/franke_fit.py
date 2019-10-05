@@ -6,7 +6,7 @@ import sys
 sys.path.insert(1, 'resources/')
 
 from franke import FrankeFunction, plot_franke
-from OLS import *
+from regression import *
 from resources import *
 import numpy as np
 import matplotlib.pyplot as plt
