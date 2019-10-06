@@ -5,7 +5,7 @@ order complexity, using training/test data and k-fold resampling.
 import sys
 sys.path.insert(1, '../resources/')
 
-from franke import FrankeFunction, plot_franke
+from franke import FrankeFunction
 from regression import *
 from resources import *
 import numpy as np
@@ -24,7 +24,7 @@ k = 5
 z = FrankeFunction(x_m, y_m)
 z_noise = (z + np.random.normal(scale = 0.3, size = (N, N)))
 
-m_list = [2, 3, 4, 5]
+m_list = [2, 3, 4, 5, 7, 10, 15, 20]
 
 kfold = KFold(n_splits = k, shuffle = True)
 
@@ -37,7 +37,6 @@ bias_list = []
 
 for m in m_list:
     X = design_matrix(x_m, y_m, m)
-    #X_train, X_test, z_train, z_test = train_test_split(X, z_noise.ravel(), test_size = 0.2)
 
     MSE_ = 0
     R2_ = 0
@@ -53,7 +52,7 @@ for m in m_list:
         z_train = z_noise.ravel()[train_inds]
         z_test = z_noise.ravel()[test_inds]
 
-        model = Ridge(X_train, z_train, l=1e-8)
+        model = OLS(X_train, z_train)
         betas[i] = model.beta
         z_predict = model(X_test)
 
@@ -65,10 +64,6 @@ for m in m_list:
         i += 1
 
     beta = np.mean(betas, axis=0)
-
-    z_final = (X @ beta).reshape((N,N))
-
-    plot_franke(x_m, y_m, z_final)
 
     MSE_ /= k
     R2_ /= k

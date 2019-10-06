@@ -1,8 +1,5 @@
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
+
 
 def FrankeFunction(x, y):
     """ Returns the value of the Franke function at given values x and y """
@@ -11,33 +8,3 @@ def FrankeFunction(x, y):
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
-
-def plot_franke(x, y, z, show = False):
-    """ Plot the Franke function """
-
-    fig = plt.figure()
-    ax = fig.gca(projection="3d")
-
-    # Plot the surface.
-    surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
-
-    # Customize the z axis.
-    ax.set_zlim(-0.10, 1.40)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter("%.02f"))
-
-    # Add a color bar which maps values to colors.
-    fig.colorbar(surf, shrink=0.5, aspect=5)
-
-    if show: plt.show()
-
-if __name__ == "__main__":
-    # Make data.
-    x = np.arange(0, 1, 0.05)
-    y = np.arange(0, 1, 0.05)
-    x, y = np.meshgrid(x,y)
-
-    z = FrankeFunction(x, y)
-
-    plot_franke(x, y, z, True)

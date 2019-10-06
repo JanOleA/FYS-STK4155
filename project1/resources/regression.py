@@ -4,7 +4,7 @@ from sklearn.linear_model import Lasso as scikit_lasso
 
 class OLS:
     """ Class for a general OLS regression method """
-    def __init__(self, X, y):
+    def __init__(self, X, y, l = None):
         """ Initializes the class and stores the design matrix X and target
         values y internally in the class
 
@@ -150,25 +150,36 @@ class Ridge(OLS):
 
 class Lasso(OLS):
     """ Subclass of the OLS class using the Lasso method for fitting """
-    def __init__(self, X, y, a = 1e-8, fit_intercept = False):
+    def __init__(self, X, y, l = 1e-8, fit_intercept = False):
         """ Initializes the class and stores the design matrix X and target
         values y internally in the class
 
         Inputs:
         X :     design matrix (matrix [n x p])
         y :     target values (array)
-        a :     alpha value for the lasso regression (number)
-
-        Kwargs:
-        fit_intercept : Includes the intercept in the fitting (boolean)
+        l :     lambda/alpha value for the lasso regression (number)
 
         Runs the regression method on initialization
         """
         self._X = X
         self._y = y
 
-        self._model = scikit_lasso(alpha=a, fit_intercept=fit_intercept)
+        self._model = scikit_lasso(alpha=l, fit_intercept=fit_intercept)
         self._fit()
+
+
+    def predict(self, X):
+        """ Predicts values of y_tilde given a matrix X and parameters beta.
+        y_tilde is returned and also stored internally in the array.
+
+        Inputs:
+        X :         matrix containing the points to calculate y_tilde (matrix)
+
+        Returns:
+        y_tilde :   predictions of y with the given X and beta
+        """
+        self.y_tilde = X @ self._beta
+        return self.y_tilde
 
 
     def _fit(self):
@@ -176,7 +187,7 @@ class Lasso(OLS):
         values y using Lasso regression from scikit learn
         """
 
-        X = self._X[:,1:] # exclude intercept
+        X = self._X
         y = self._y
 
         if len(y.shape) > 1:

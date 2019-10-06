@@ -1,4 +1,29 @@
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+
+
+def plot_surface(x, y, z, zlim=(-0.10, 1.40), show = False):
+    """ Plots a 2D surface """
+
+    fig = plt.figure()
+    ax = fig.gca(projection="3d")
+
+    # Plot the surface.
+    surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
+                           linewidth=0, antialiased=False)
+
+    # Customize the z axis.
+    ax.set_zlim(zlim[0], zlim[1])
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter("%.02f"))
+
+    # Add a color bar which maps values to colors.
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    if show: plt.show()
 
 
 def design_matrix(x, y, m):
@@ -28,6 +53,21 @@ def design_matrix(x, y, m):
             X[:,q+k] = x**(i-k) * y**(k)
 
     return X
+
+
+def confidence_interval(beta, X, zvar):
+    """ Calculates the 95% confidence interval of beta by:
+    CI = beta_i ± 1.96*sqrt(v_i)*sqrt(z_variance)
+    Where v_i is the i-th diagonal element of (X.T*X)^-1
+
+    Returns:
+    (beta_min, beta_max)
+    """
+    vsqrt = np.sqrt(np.diag(np.linalg.pinv(X.T @ X)))
+    beta_min = beta - 1.96*vsqrt*np.sqrt(zvar)
+    beta_max = beta + 1.96*vsqrt*np.sqrt(zvar)
+
+    return beta_min, beta_max
 
 
 def MSE(y_data, y_model):
