@@ -1,6 +1,9 @@
-""" Does a basic fit of the franke function using ridge regression up to fifth
-order complexity, using training/test data and k-fold resampling, for various
-values of lambda.
+""" Regression fitting for the terrain data using OLS, Ridge and Lasso
+methods. KFold cross-validation is used to calculate the MSE, bias and variance.
+
+For all methods, various degrees of polynomials are used to do the fitting.
+For Ridge and Lasso, fitting is done using various values of lambda/alpha, and
+the various results are then plotted in heatmaps.
 """
 
 import sys
@@ -14,9 +17,10 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.preprocessing import PolynomialFeatures
 import seaborn as sns
-sns.set()
 
-terrain = imread("terrain_data/SRTM_data_norway_1.tif")
+sns.set()
+terrain = imread("terrain_data/SRTM_data_Norway_1.tif")
+print("Original dataset size:", terrain.shape)
 
 N = 1000
 x = np.sort(np.random.uniform(0, 1, N))
@@ -27,9 +31,23 @@ x_start = 500
 y_start = 1500
 
 plt.figure()
-plt.imshow(terrain, cmap="gray") # show entire loaded terrain
-c_terrain = terrain[y_start:y_start + N, x_start:x_start + N] # crop terrain to 1000x1000 square
-plot_surface(x_m, y_m, c_terrain, zlim = (0,1000), show=True)
+alt = plt.imshow(terrain, cmap="gray") # show entire loaded terrain
+plt.savefig("terrain.pdf")
+
+c_terrain = terrain[y_start:y_start + N, x_start:x_start + N] # crop terrain to NxN square
+plt.figure()
+alt = plt.imshow(c_terrain, cmap="gray") # show cropped terrain
+plt.savefig("c_terrain.pdf")
+
+scale_constant = np.max(c_terrain)
+c_terrain = c_terrain/scale_constant # normalize input data
+plot_surface(x_m, y_m, c_terrain)
+plt.title("Squared terrain, normalized")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.savefig("c_terrain_3d.pdf")
+plt.show()
+
 
 k = 5
 m_list = [2, 3, 4, 5, 7, 10, 20]
@@ -42,8 +60,9 @@ R2_matrix = np.zeros((len(m_list), len(lambda_list)))
 var_matrix = np.zeros((len(m_list), len(lambda_list)))
 bias_matrix = np.zeros((len(m_list), len(lambda_list)))
 
-# set up list to hold the various results for each lambda for Ridge and Lasso
+# set up lists to hold the various results for each lambda for the best results
 MSE_arrays = []
+R2_arrays = []
 
 z_select = c_terrain
 model_types = [OLS, Ridge, Lasso]
@@ -68,6 +87,7 @@ for model_type, model_name in zip(model_types, model_names):
 
                 model = model_type(X_train, z_train, l)
                 z_predict = model(X_test)
+
 
                 MSE_ += MSE(z_test, z_predict)
                 R2_ += R2(z_test, z_predict)
@@ -98,10 +118,27 @@ for model_type, model_name in zip(model_types, model_names):
     best_inds = np.unravel_index(np.argmin(MSE_matrix, axis=None), MSE_matrix.shape)
     best_m = m_list[best_inds[0]]
     best_l = lambda_list[best_inds[1]]
-    MSE_arrays.append(MSE_matrix[best_inds[0]].copy()) # store the MSE for each lambda for the best complexity
+    MSE_arrays.append(MSE_matrix[best_inds[0]].copy()) # store the MSE for each lambda for the best complexity (measured by lowest MSE)
+    R2_arrays.append(R2_matrix[best_inds[0]].copy()) # store the R2 score for each lambda for the best complexity (measured by lowest MSE)
     print("Computation complete, best MSE: {:2.4f}, best R2: {:1.4f}, best m: {:2d}, best l: {:2.2e}"
                                 .format(best_MSE, best_R2, best_m, best_l))
 
+    """ Plotting below """
+    # plot MSE, bias, variance vs. complexity for some lambda
+    lambda_ind = -1
+    plt.figure()
+    plt.plot(m_list, MSE_matrix[:,lambda_ind])
+    plt.plot(m_list, bias_matrix[:,lambda_ind])
+    plt.plot(m_list, var_matrix[:,lambda_ind])
+    plt.legend(["MSE", "bias^2", "variance"])
+    plt.xlabel("Complexity")
+    plt.ylabel("Error")
+    plt.title("Bias-variance tradeoff")
+    fn = model_name + "_bv_tradeoff.pdf"
+    plt.savefig(fn)
+    plt.show()
+
+    # plot heatmaps of MSE and R2 as function of complexity and lambda
     f, ax = plt.subplots(figsize=(9, 7))
     sns.heatmap(MSE_matrix, cbar = True, square = True,
                 xticklabels = lambda_list,
@@ -128,12 +165,23 @@ for model_type, model_name in zip(model_types, model_names):
 
     plt.show()
 
-
+# plot MSE and R2 as a function of complexity using the best models
+plt.figure()
 plt.semilogx(lambda_list, MSE_arrays[0])
 plt.semilogx(lambda_list, MSE_arrays[1])
 plt.semilogx(lambda_list, MSE_arrays[2])
 plt.legend(model_names)
 plt.title("MSE scores")
+plt.xlabel("lambda")
+plt.ylabel("MSE")
+plt.xlim((lambda_list[0], lambda_list[-1]))
+plt.savefig("mse_scores.pdf")
+plt.figure()
+plt.semilogx(lambda_list, R2_arrays[0])
+plt.semilogx(lambda_list, R2_arrays[1])
+plt.semilogx(lambda_list, R2_arrays[2])
+plt.legend(model_names)
+plt.title("R2 scores")
 plt.xlabel("lambda")
 plt.ylabel("MSE")
 plt.xlim((lambda_list[0], lambda_list[-1]))

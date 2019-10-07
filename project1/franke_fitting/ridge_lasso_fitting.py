@@ -1,4 +1,9 @@
-"""
+""" Regression fitting for the Franke function using OLS, Ridge and Lasso
+methods. KFold cross-validation is used to calculate the MSE, bias and variance.
+
+For all methods, various degrees of polynomials are used to do the fitting.
+For Ridge and Lasso, fitting is done using various values of lambda/alpha, and
+the various results are then plotted in heatmaps.
 """
 
 import sys
@@ -23,9 +28,9 @@ x_m, y_m = np.meshgrid(x, y)
 k = 5
 
 z = FrankeFunction(x_m, y_m)
-z_noise = (z + np.random.normal(scale = 0.3, size = (N, N)))
+z_noise = (z + np.random.normal(scale = 0.1, size = (N, N)))
 
-m_list = [2, 3, 4, 5, 7, 10]
+m_list = [2, 3, 4, 5, 7, 10, 15]
 lambda_list = [10**(-i) for i in range(-4,4)]
 
 kfold = KFold(n_splits = k, shuffle = True)
@@ -35,10 +40,11 @@ R2_matrix = np.zeros((len(m_list), len(lambda_list)))
 var_matrix = np.zeros((len(m_list), len(lambda_list)))
 bias_matrix = np.zeros((len(m_list), len(lambda_list)))
 
-# set up list to hold the various results for each lambda for Ridge and Lasso
+# set up lists to hold the various results for each lambda for the best results
 MSE_arrays = []
+R2_arrays = []
 
-z_select = z # used to select z_noise or z
+z_select = z_noise # used to select z_noise or z
 model_types = [OLS, Ridge, Lasso]
 model_names = ["OLS", "Ridge", "Lasso"]
 
@@ -91,10 +97,26 @@ for model_type, model_name in zip(model_types, model_names):
     best_inds = np.unravel_index(np.argmin(MSE_matrix, axis=None), MSE_matrix.shape)
     best_m = m_list[best_inds[0]]
     best_l = lambda_list[best_inds[1]]
-    MSE_arrays.append(MSE_matrix[best_inds[0]].copy()) # store the MSE for each lambda for the best complexity
+    MSE_arrays.append(MSE_matrix[best_inds[0]].copy()) # store the MSE for each lambda for the best complexity (measured by lowest MSE)
+    R2_arrays.append(R2_matrix[best_inds[0]].copy()) # store the R2 score for each lambda for the best complexity (measured by lowest MSE)
     print("Computation complete, best MSE: {:2.4f}, best R2: {:1.4f}, best m: {:2d}, best l: {:2.2e}"
                                 .format(best_MSE, best_R2, best_m, best_l))
 
+    """ Plotting below """
+    # plot MSE, bias, variance vs. complexity for some lambda
+    lambda_ind = -1
+    plt.figure()
+    plt.plot(m_list, MSE_matrix[:,lambda_ind])
+    plt.plot(m_list, bias_matrix[:,lambda_ind])
+    plt.plot(m_list, var_matrix[:,lambda_ind])
+    plt.legend(["MSE", "bias", "variance"])
+    plt.xlabel("Complexity")
+    plt.ylabel("Error")
+    fn = model_name + "_bv_tradeoff.pdf"
+    plt.savefig(fn)
+    plt.show()
+
+    # plot heatmaps of MSE and R2 as function of complexity and lambda
     f, ax = plt.subplots(figsize=(9, 7))
     sns.heatmap(MSE_matrix, cbar = True, square = True,
                 xticklabels = lambda_list,
@@ -121,10 +143,21 @@ for model_type, model_name in zip(model_types, model_names):
 
     plt.show()
 
-
+# plot MSE and R2 as a function of complexity using the best models
+plt.figure()
 plt.semilogx(lambda_list, MSE_arrays[0])
 plt.semilogx(lambda_list, MSE_arrays[1])
 plt.semilogx(lambda_list, MSE_arrays[2])
+plt.legend(model_names)
+plt.title("MSE scores")
+plt.xlabel("lambda")
+plt.ylabel("MSE")
+plt.xlim((lambda_list[0], lambda_list[-1]))
+plt.savefig("mse_scores.pdf")
+plt.figure()
+plt.semilogx(lambda_list, R2_arrays[0])
+plt.semilogx(lambda_list, R2_arrays[1])
+plt.semilogx(lambda_list, R2_arrays[2])
 plt.legend(model_names)
 plt.title("MSE scores")
 plt.xlabel("lambda")

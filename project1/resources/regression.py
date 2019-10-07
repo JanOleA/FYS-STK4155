@@ -73,32 +73,6 @@ class OLS:
         return self.predict(X)
 
 
-    def R2(self, y = None):
-        """ Calculate and return the R2 score of the prediction and the original
-        target values y
-
-        Keyword arguments:
-        y :     Override the target values to compare with if you wish to
-                compare the prediction with a different set of data
-
-        Returns:
-        r2 :    R2 score of the prediction vs. the target values
-        """
-        if y is None:
-            y = self._y
-
-        if len(y.shape) > 1:
-            y = y.ravel()
-
-        y_t = self.y_tilde
-        if len(y_t.shape) > 1:
-            y_t = y_t.ravel()
-
-        y_avg = np.average(y)
-        r2 = 1 - (np.sum((y - y_t)**2)/np.sum((y - y_avg)**2))
-        return r2
-
-
 class Ridge(OLS):
     """ Subclass of the OLS class using the Ridge method for fitting """
     def __init__(self, X, y, l = 1.):
@@ -150,7 +124,7 @@ class Ridge(OLS):
 
 class Lasso(OLS):
     """ Subclass of the OLS class using the Lasso method for fitting """
-    def __init__(self, X, y, l = 1e-8, fit_intercept = False):
+    def __init__(self, X, y, l = 1e-8):
         """ Initializes the class and stores the design matrix X and target
         values y internally in the class
 
@@ -164,7 +138,7 @@ class Lasso(OLS):
         self._X = X
         self._y = y
 
-        self._model = scikit_lasso(alpha=l, fit_intercept=fit_intercept)
+        self._model = scikit_lasso(alpha=l, fit_intercept=False)
         self._fit()
 
 
@@ -196,3 +170,11 @@ class Lasso(OLS):
         self._model.fit(X, y)
 
         self._beta = self._model.coef_
+
+
+    def fit(self, X, y, l):
+        """ User callable method for recalculating the fit with new values for
+        X, y and lambda
+        """
+        self._l = l
+        super().fit(X, y)

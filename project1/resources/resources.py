@@ -87,9 +87,7 @@ def MSE(y_data, y_model):
     if len(y_model.shape) > 1:
         y_model = y_model.ravel()
 
-    n = len(y_model)
-
-    return np.sum((y_data - y_model)**2)/n
+    return np.mean((y_data - y_model)**2)
 
 
 def R2(y_data, y_model):
@@ -111,7 +109,7 @@ def R2(y_data, y_model):
 
     n = len(y_model)
 
-    y_avg = np.average(y_data)
+    y_avg = np.mean(y_data)
     return 1 - (np.sum((y_data - y_model)**2)/np.sum((y_data - y_avg)**2))
 
 
@@ -122,10 +120,10 @@ def variance(y_model):
     y_model :   array containing the prediction data
 
     Returns:
-    var :       the variance
+    var :       the variance of y_model
     """
 
-    return np.sum((y_model - np.mean(y_model))**2)/np.size(y_model)
+    return np.mean(np.var(y_model))
 
 
 def bias(y_data, y_model):
@@ -140,4 +138,4 @@ def bias(y_data, y_model):
     bias :      value of the bias
     """
 
-    return np.sum((y_data - np.mean(y_model))**2)/np.size(y_model)
+    return np.mean((y_data - np.mean(y_model))**2)
