@@ -105,11 +105,3 @@ def R2(y_data, y_model):
 
     y_avg = np.mean(y_data)
     return 1 - (np.sum((y_data - y_model)**2)/np.sum((y_data - y_avg)**2))
-
-
-def accuracy_classification(y_target, y_model):
-    """ Returns the accuracy score for classification problem """
-    target_indices = np.argmax(y_target, axis = 1)
-    guessed_indices = np.argmax(y_model, axis = 1)
-
-    return np.sum(target_indices == guessed_indices)/len(target_indices)
