@@ -66,3 +66,9 @@ class MachineLearning:
     def accuracy_classification(self, y_target, y_model):
         """ Returns the accuracy score for classification problem """
         return np.sum(y_target == y_model)/len(y_target)
+
+    def accuracy_onehot(self, y_target, y_model):
+        """ Returns the accuracy score for classification problem """
+        target_indices = np.argmax(y_target, axis = 1)
+        guess_indices = np.argmax(y_model, axis = 1)
+        return np.sum(target_indices == guess_indices)/len(target_indices)

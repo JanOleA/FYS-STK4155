@@ -67,7 +67,6 @@ class NeuralNetwork(MachineLearning):
         outputs = y.shape[0]
 
         self._n_batches = n_batches
-        minibatch_size = int(X.shape[0]/M)
 
         self._layers = []
 
@@ -80,7 +79,7 @@ class NeuralNetwork(MachineLearning):
             prev_layer = layer
 
         # add output layer
-        self.add_layer(prev_layer, y.shape[0],
+        self.add_layer(prev_layer, y.shape[1],
                        activation="softmax",
                        w_init="random")
 
@@ -120,7 +119,7 @@ class NeuralNetwork(MachineLearning):
 
         # output layer
         output_layer = self._layers[-1]
-        delta_L = (y - output_layer.a)
+        delta_L = (output_layer.a - y)
 
         deltas.append(delta_L)
 
@@ -171,6 +170,8 @@ class NeuralNetwork(MachineLearning):
 
         M = self._n_batches
 
+        print("Initial guess accuracy vs. training data:", self.accuracy())
+
         self.accuracy_history = np.zeros(n_epochs)
         self.cost_history = np.zeros(n_epochs)
 
@@ -216,4 +217,4 @@ class NeuralNetwork(MachineLearning):
 
         y_pred = self.predict(X)
 
-        return self.accuracy_classification(y_t, y_pred)
+        return self.accuracy_onehot(y_t, y_pred)

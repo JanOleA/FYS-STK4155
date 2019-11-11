@@ -61,14 +61,17 @@ X = ColumnTransformer([("", onehotencoder, [1,2,3,5,6,7,8,9]),],
 
 X = scaler.fit_transform(X)
 
+y = onehotencoder.fit_transform(y).toarray()
+
 # shuffle X and y before splitting
 rand_ind = np.arange(X.shape[0])
 np.random.shuffle(rand_ind)
 X = X[rand_ind,:]
 y = y[rand_ind,:]
 
+
 # Train-test split
-trainingShare = 0.8
+trainingShare = 0.6
 seed = 1
 Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, train_size = trainingShare,
                                                 test_size = 1 - trainingShare,
@@ -83,10 +86,10 @@ batch_size = 100
 n_batches = int(Xtrain.shape[0]/batch_size)
 print(n_batches)
 
-layers = [100, 20, 20] # does not include output layer
+layers = [100, 20, 40] # does not include output layer
 
 nn = NeuralNetwork(Xtrain, ytrain, layers, n_batches = n_batches)
-nn.fit(n_epochs = 100)
+nn.fit(n_epochs = 100, eta = 0.1)
 
 """
 logReg = LogisticRegression(n_batches = n_batches)
