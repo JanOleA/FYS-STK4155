@@ -11,7 +11,7 @@ class MachineLearning:
 
     def sigmoid(self, x):
         """ Sigmoid activation function """
-        return np.exp(x)/(1 + np.exp(x))
+        return 1/(1 + np.exp(-x))
 
 
     def sigmoid_diff(self, x):
@@ -61,20 +61,6 @@ class MachineLearning:
         dC_dbeta = -np.dot(X.T, (y - p))/N
 
         return beta - eta*dC_dbeta
-
-
-    def cost(self, X, y_data, beta):
-        """ Method for getting the cost/loss for logistic regression
-        X      : predictors
-        y_data : target data (probabilities)
-        beta   : beta parameters of model
-
-        """
-        y_model = X @ beta
-        p = self.sigmoid(y_model)
-
-        C = -np.mean(y_data*np.log(p) + (1 - y_data)*np.log(1+1e-15 - p))
-        return C
 
 
     def accuracy_classification(self, y_target, y_model):

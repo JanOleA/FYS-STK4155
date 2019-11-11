@@ -60,6 +60,20 @@ class LogisticRegression(MachineLearning):
                 break_counter = 0
 
 
+    def cost(self, X, y_data, beta):
+        """ Method for getting the cost/loss for logistic regression
+        X      : predictors
+        y_data : target data (probabilities)
+        beta   : beta parameters of model
+
+        """
+        y_model = X @ beta
+        p = self.sigmoid(y_model)
+
+        C = -np.mean(y_data*np.log(p) + (1 - y_data)*np.log(1+1e-15 - p))
+        return C
+
+
     def accuracy(self, X = None, y_t = None):
         """ Returns accuracy using calculated beta
         Inputs:

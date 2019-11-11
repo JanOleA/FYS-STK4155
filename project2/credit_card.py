@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
@@ -12,6 +13,7 @@ from sklearn.linear_model import LogisticRegression as sk_LogisticRegression
 sys.path.insert(1, 'resources/')
 from resources import *
 from logreg import LogisticRegression # own logistic regression
+from neural_network import NeuralNetwork # own neural network
 
 np.random.seed(0)
 
@@ -59,6 +61,11 @@ X = ColumnTransformer([("", onehotencoder, [1,2,3,5,6,7,8,9]),],
 
 X = scaler.fit_transform(X)
 
+# shuffle X and y before splitting
+rand_ind = np.arange(X.shape[0])
+np.random.shuffle(rand_ind)
+X = X[rand_ind,:]
+y = y[rand_ind,:]
 
 # Train-test split
 trainingShare = 0.8
@@ -72,12 +79,31 @@ sc = StandardScaler()
 Xtrain = sc.fit_transform(Xtrain)
 Xtest = sc.transform(Xtest)
 
-logReg = LogisticRegression(n_batches = 10)
+batch_size = 100
+n_batches = int(Xtrain.shape[0]/batch_size)
+print(n_batches)
 
-logReg.fit(Xtrain, ytrain, eta = 1e-0, n_epochs = 2000)
-print("Accuracy vs. test data, own logreg:", logReg.accuracy(Xtest, ytest))
+layers = [100, 20, 20] # does not include output layer
+
+nn = NeuralNetwork(Xtrain, ytrain, layers, n_batches = n_batches)
+nn.fit(n_epochs = 100)
+
+"""
+logReg = LogisticRegression(n_batches = n_batches)
+
+eta_list = [1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
+acc_list = []
+
+for eta in eta_list:
+    logReg.fit(Xtrain, ytrain, eta = eta, n_epochs = 4000)
+    acc_list.append(logReg.accuracy(Xtest, ytest))
+    print("Accuracy vs. test data, own logreg:", acc_list[-1])
 
 sk_logReg = sk_LogisticRegression(solver='lbfgs')
 sk_logReg.fit(Xtrain, ytrain.ravel())
 y_pred = sk_logReg.predict(Xtest)
 print("Accuracy vs. test data, sklearn logreg:", sk_logReg.score(Xtest, ytest))
+
+plt.semilogx(eta_list, acc_list)
+plt.show()
+"""
