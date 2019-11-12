@@ -64,13 +64,12 @@ class NeuralNetwork(MachineLearning):
 
         self.inputs = X.shape[0]
         self.features = X.shape[1]
-        outputs = y.shape[0]
 
         self._n_batches = n_batches
 
         self._layers = []
 
-        # set up layers
+        # set up hidden layers
         for i, layer in enumerate(layers):
             if i == 0:
                 self.add_layer(self.features, layer)
@@ -178,13 +177,13 @@ class NeuralNetwork(MachineLearning):
         break_counter = 0
 
         minibatch_size = int(X.shape[0]/M)
+        indices = np.arange(X.shape[0])
         for i in range(1, n_epochs+1):
             for j in range(M):
-                random_index = np.random.randint(M)
-                ind_start = random_index*minibatch_size
-                ind_end = ind_start + minibatch_size
-                X_batch = X[ind_start:ind_end]
-                y_batch = y[ind_start:ind_end]
+                np.random.shuffle(indices)
+                rand_indices = indices[:minibatch_size]
+                X_batch = X[rand_indices]
+                y_batch = y[rand_indices]
 
                 self.feedforward(X_batch)
                 self.backpropagation(X_batch, y_batch, eta)
