@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from machine_learning import MachineLearning
+from resources import MSE, R2
 import sys
 
 
@@ -193,16 +194,24 @@ class NeuralNetwork(MachineLearning):
         print("batch size = {:d}, regularization param = {:g}".format(minibatch_size, lmbda))
         print("Initial guess accuracy vs. training data:", self.accuracy())
 
-        self.accuracy_history = np.zeros(n_epochs)
-        self.cost_history = np.zeros(n_epochs)
+        self.accuracy_history = np.zeros(n_epochs + 1)
+        self.cost_history = np.zeros(n_epochs + 1)
+
+        self.accuracy_history[0] = self.accuracy()
+        self.cost_history[0] = self.cost(lmbda = lmbda)
 
         if (self._Xtest is not None) and (self._ytest is not None):
             """ if test inputs and targets are provided, calculate the accuracy
             and cost value for these as well
             """
             benchmark = True
-            self.accuracy_hist_test = np.zeros(n_epochs)
-            self.cost_hist_test = np.zeros(n_epochs)
+            self.accuracy_hist_test = np.zeros(n_epochs + 1)
+            self.cost_hist_test = np.zeros(n_epochs + 1)
+
+            self.accuracy_hist_test[0] = self.accuracy(self._Xtest,
+                                                       y_t = self._ytest)
+            self.cost_hist_test[0] = self.cost(y_t = self._ytest,
+                                               lmbda = lmbda)
         else:
             benchmark = False
 
@@ -221,14 +230,14 @@ class NeuralNetwork(MachineLearning):
             storing the weights and biases that gives the smallest cost or
             highest accuracy (vs test?)
             """
-            self.accuracy_history[i - 1] = self.accuracy()
-            self.cost_history[i - 1] = self.cost(lmbda = lmbda)
+            self.accuracy_history[i] = self.accuracy()
+            self.cost_history[i] = self.cost(lmbda = lmbda)
 
             if benchmark:
-                self.accuracy_hist_test[i - 1] = self.accuracy(self._Xtest,
-                                                               y_t = self._ytest)
-                self.cost_hist_test[i - 1] = self.cost(y_t = self._ytest,
-                                                       lmbda = lmbda)
+                self.accuracy_hist_test[i] = self.accuracy(self._Xtest,
+                                                           y_t = self._ytest)
+                self.cost_hist_test[i] = self.cost(y_t = self._ytest,
+                                                   lmbda = lmbda)
 
             if verbose:
                 print("Epoch: {:d} | Accuracy vs. training data: {:1.4f} | Loss: {:1.4f}"
@@ -290,7 +299,7 @@ class NeuralNetwork(MachineLearning):
         return self.accuracy_onehot(y_t, y_pred)
 
 
-class NeuralNetworkRegression(NeuralNetwork):
+class NeuralNetworkLinear(NeuralNetwork):
     """ Class for own neural network for regression problems """
     def __init__(self, X, y, layers,
                  Xtest = None, ytest = None):
@@ -370,32 +379,32 @@ class NeuralNetworkRegression(NeuralNetwork):
             a_prev = layer.a
 
 
-        def cost(self, y_t = None, lmbda = 0):
-            """ Method for getting the cost/loss for the neural network.
-            Uses the result from the previous feedforward iteration for the model.
-            Inputs:
-            y_t   : target values, if None uses training targets.
-            """
-            if y_t is None:
-                y_t = self._y
+    def cost(self, y_t = None, lmbda = 0):
+        """ Method for getting the cost/loss for the neural network.
+        Uses the result from the previous feedforward iteration for the model.
+        Inputs:
+        y_t   : target values, if None uses training targets.
+        """
+        if y_t is None:
+            y_t = self._y
 
-            a = self._layers[-1].a # output layer output
+        a = self._layers[-1].a # output layer output
 
-            return R2(y_t, a)
+        return MSE(y_t, a)
 
 
-        def accuracy(self, X = None, y_t = None):
-            """ Does a prediction and returns the accuracy
-            Inputs:
-            X   :   predictors to use for accuracy calculation,
-                    if None use training predictors
-            y_p :   targets to use, if None use training targets
-            """
-            if X is None:
-                X = self._X
-            if y_t is None:
-                y_t = self._y
+    def accuracy(self, X = None, y_t = None):
+        """ Does a prediction and returns the accuracy
+        Inputs:
+        X   :   predictors to use for accuracy calculation,
+                if None use training predictors
+        y_p :   targets to use, if None use training targets
+        """
+        if X is None:
+            X = self._X
+        if y_t is None:
+            y_t = self._y
 
-            y_pred = self.predict(X)
+        y_pred = self.predict(X)
 
-            return MSE(y_t, self._layers[-1].a)
+        return R2(y_t, self._layers[-1].a)

@@ -264,22 +264,64 @@ if mode == "nn":
     plt.savefig("results/cost_lmbda.pdf")
     plt.show()
 
-"""
-logReg = LogisticRegression(n_batches = n_batches)
+if mode == "logreg":
+    batch_size = 100
+    n_batches = int(Xtrain.shape[0]/batch_size)
+    logReg = LogisticRegression(n_batches = n_batches, allow_early_stop = False)
 
-eta_list = [1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
-acc_list = []
+    etas = [1, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
+    acc_list = []
 
-for eta in eta_list:
-    logReg.fit(Xtrain, ytrain, eta = eta, n_epochs = 4000)
-    acc_list.append(logReg.accuracy(Xtest, ytest))
-    print("Accuracy vs. test data, own logreg:", acc_list[-1])
+    accuracys_train = []
+    costs_train = []
+    accuracys_test = []
+    costs_test = []
 
-sk_logReg = sk_LogisticRegression(solver='lbfgs')
-sk_logReg.fit(Xtrain, ytrain.ravel())
-y_pred = sk_logReg.predict(Xtest)
-print("Accuracy vs. test data, sklearn logreg:", sk_logReg.score(Xtest, ytest))
+    for eta in etas:
+        a, b, c, d = logReg.fit(Xtrain, ytrain, eta = eta, n_epochs = 2000,
+                                Xtest = Xtest, ytest = ytest)
+        acc_list.append(logReg.accuracy(Xtest, ytest))
 
-plt.semilogx(eta_list, acc_list)
-plt.show()
-"""
+        accuracys_train.append(a)
+        costs_train.append(b)
+        accuracys_test.append(c)
+        costs_test.append(d)
+
+        print("Accuracy vs. test data, own logreg:", acc_list[-1])
+
+    plt.figure(figsize=(10,8))
+    plt.title("Accuracy score for varying learning rate, logistic regression")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    for i, eta in enumerate(etas):
+        color = color_list[i]
+        plt.plot(accuracys_train[i], "--", color = color,
+                 label="Train, eta = {:g}".format(eta))
+        plt.plot(accuracys_test[i], color = color,
+                 label="Test, eta = {:g}".format(eta))
+
+    plt.legend(loc="lower right")
+    plt.savefig("results/accuracy_eta_logreg.pdf")
+
+    plt.figure(figsize=(10,8))
+    plt.title("Cost function for varying learning rate, logistic regression")
+    plt.xlabel("Epoch")
+    plt.ylabel("Cost")
+    for i, eta in enumerate(etas):
+        color = color_list[i]
+        plt.plot(costs_train[i], "--", color = color,
+                 label="Train, eta = {:g}".format(eta))
+        plt.plot(costs_test[i], color = color,
+                 label="Test, eta = {:g}".format(eta))
+
+    plt.legend(loc="upper right")
+    plt.savefig("results/cost_eta_logreg.pdf")
+
+    sk_logReg = sk_LogisticRegression(solver='lbfgs')
+    sk_logReg.fit(Xtrain, ytrain.ravel())
+    y_pred = sk_logReg.predict(Xtest)
+    print("Accuracy vs. test data, sklearn logreg:", sk_logReg.score(Xtest, ytest))
+
+    plt.figure()
+    plt.semilogx(etas, acc_list)
+    plt.show()
