@@ -17,9 +17,10 @@ color_list = ["green", "blue", "red", "cyan", "purple",
 
 plt.rcParams.update({'font.size': 16})
 
+N = 100 # grid resolution
 # Setting up features and targets
-x1 = np.linspace(0, 1, 100)
-x2 = np.linspace(0, 1, 100)
+x1 = np.linspace(0, 1, N)
+x2 = np.linspace(0, 1, N)
 
 m_x1, m_x2 = np.meshgrid(x1, x2)
 
@@ -213,7 +214,7 @@ if params:
 else:
     """ if not parameter test, run with some good parameters and plot fit """
     batch_size = 100
-    eta = 0.01
+    eta = 0.1
     lmbda = 1e-4
     nn = NeuralNetworkLinear(Xtrain, ytrain, layers)
     n_batches = int(Xtrain.shape[0]/batch_size)
@@ -221,10 +222,10 @@ else:
 
     plot_surface(m_x1, m_x2, y_original)
     plt.title("Original data without noise")
-    plot_surface(m_x1, m_x2, y.reshape(100,100))
+    plot_surface(m_x1, m_x2, y.reshape(N,N))
     plt.title("Original data with noise")
 
-    y_predict = nn.predict(X).reshape(100,100)
+    y_predict = nn.predict(X).reshape(N,N)
 
     plot_surface(m_x1, m_x2, y_predict, show = True)
     plt.title("Neural network prediction")
