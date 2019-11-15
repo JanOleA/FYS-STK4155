@@ -32,6 +32,14 @@ class MachineLearning:
         return x
 
 
+    def linear(self, x):
+        return x
+
+
+    def linear_diff(self, x):
+        return 1
+
+
     def softmax(self, x):
         """ Softmax activation function """
         return np.exp(x)/np.sum(np.exp(x), axis = 1, keepdims = True)
@@ -42,31 +50,10 @@ class MachineLearning:
         return self.softmax(x)*(1 - self.softmax(x))
 
 
-    def gradient_descent_step(self, X, y, beta, eta, N):
-        """ Gradient descent method for a single step for one batch in
-        stochastic gradient descent
-        X    : feature matrix for current batch
-        y    : targets for current batch
-        beta : current guess
-        eta  : learning rate
-        N    : batch size
-
-        returns:
-        new beta values
-        """
-
-        y_model = np.dot(X, beta) # prediction
-        p = self.sigmoid(y_model)
-
-        dC_dbeta = -np.dot(X.T, (y - p))/N
-
-        return beta - eta*dC_dbeta
-
-
     def accuracy_classification(self, y_target, y_model):
-        """ Returns the accuracy score for classification problem """
+        """ Returns the accuracy score for classification problem (logreg) """
         return np.sum(y_target == y_model)/len(y_target)
-        
+
 
     def accuracy_onehot(self, y_target, y_model):
         """ Returns the accuracy score for classification problem where the

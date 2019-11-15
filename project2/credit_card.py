@@ -15,7 +15,22 @@ from resources import *
 from logreg import LogisticRegression # own logistic regression
 from neural_network import NeuralNetwork # own neural network
 
+if len(sys.argv) < 2:
+    print("Please provide keyword argument ('nn' for neural network, 'log' for logistic regression)")
+    print("Defaulting to logistic regression")
+    mode = "logreg"
+else:
+    if sys.argv[1].lower() == "nn":
+        mode = "nn"
+    elif sys.argv[1].lower() == "log":
+        mode = "logreg"
+    else:
+        print("Incorrect keyword argument, use 'nn' for neural network or 'log' for logistic regression")
+        sys.exit(1)
+
 np.random.seed(1)
+
+plt.rcParams.update({'font.size': 16})
 
 filename = 'data/default of credit card clients.xls'
 
@@ -60,7 +75,7 @@ X = ColumnTransformer([("", onehotencoder, [1,2,3,5,6,7,8,9]),],
                       remainder="passthrough").fit_transform(X)
 
 X = scaler.fit_transform(X)
-y = onehotencoder.fit_transform(y).toarray()
+if mode == "nn": y = onehotencoder.fit_transform(y).toarray()
 
 # shuffle X and y
 rand_ind = np.arange(X.shape[0])
@@ -80,15 +95,174 @@ sc = StandardScaler()
 Xtrain = sc.fit_transform(Xtrain)
 Xtest = sc.transform(Xtest)
 
-batch_size = 1000
-n_batches = int(Xtrain.shape[0]/batch_size)
+# color list for plotting
+color_list = ["green", "blue", "red", "cyan", "purple",
+              "orange", "sage", "brown", "black"]
 
-layers = [100, 20, 100] # hidden layers
+if mode == "nn":
+    layers = [50, 20] # hidden layers
 
-nn = NeuralNetwork(Xtrain, ytrain, layers, n_batches = n_batches)
-print(nn.accuracy(Xtest, ytest))
-nn.fit(n_epochs = 100, eta = 1)
-print(nn.accuracy(Xtest, ytest))
+    """ Testing various learning rates """
+
+    etas = [10**(-i) for i in range(5)]
+
+    accuracys_train = []
+    costs_train = []
+    accuracys_test = []
+    costs_test = []
+
+    batch_size = 50
+    lmbda = 0
+
+    for eta in etas:
+        nn = NeuralNetwork(Xtrain, ytrain, layers,
+                           Xtest = Xtest, ytest = ytest)
+        n_batches = int(Xtrain.shape[0]/batch_size)
+        a, b, c, d = nn.fit(n_epochs = 100, eta = eta,
+                            n_batches = n_batches, lmbda = lmbda)
+
+        accuracys_train.append(a)
+        costs_train.append(b)
+        accuracys_test.append(c)
+        costs_test.append(d)
+
+        print("Test accuracy:", nn.accuracy(Xtest, ytest)) # test accuracy after training
+
+    plt.figure(figsize=(10,8))
+    plt.title("Accuracy score for varying learning rate")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    for i, eta in enumerate(etas):
+        color = color_list[i]
+        plt.plot(accuracys_train[i], "--", color = color,
+                 label="Train, eta = {:g}".format(eta))
+        plt.plot(accuracys_test[i], color = color,
+                 label="Test, eta = {:g}".format(eta))
+
+    plt.legend(loc="lower right")
+    plt.savefig("results/accuracy_eta.pdf")
+
+    plt.figure(figsize=(10,8))
+    plt.title("Cost function for varying learning rate")
+    plt.xlabel("Epoch")
+    plt.ylabel("Cost")
+    for i, eta in enumerate(etas):
+        color = color_list[i]
+        plt.plot(costs_train[i], "--", color = color,
+                 label="Train, eta = {:g}".format(eta))
+        plt.plot(costs_test[i], color = color,
+                 label="Test, eta = {:g}".format(eta))
+
+    plt.legend(loc="upper right")
+    plt.savefig("results/cost_eta.pdf")
+
+    """ Testing various batch sizes with learning rate 0.1 """
+
+    accuracys_train = []
+    costs_train = []
+    accuracys_test = []
+    costs_test = []
+
+    eta = 0.1
+    batch_sizes = [10, 50, 100, 500, 1000]
+
+    for batch_size in batch_sizes:
+        nn = NeuralNetwork(Xtrain, ytrain, layers,
+                           Xtest = Xtest, ytest = ytest)
+        n_batches = int(Xtrain.shape[0]/batch_size)
+        a, b, c, d = nn.fit(n_epochs = 100, eta = eta,
+                            n_batches = n_batches, lmbda = lmbda)
+
+        accuracys_train.append(a)
+        costs_train.append(b)
+        accuracys_test.append(c)
+        costs_test.append(d)
+
+        print("Test accuracy:", nn.accuracy(Xtest, ytest)) # test accuracy after training
+
+    plt.figure(figsize=(10,8))
+    plt.title("Accuracy score for varying batch size")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    for i, batch_size in enumerate(batch_sizes):
+        color = color_list[i]
+        plt.plot(accuracys_train[i], "--", color = color,
+                 label="Train, batch size = {:d}".format(batch_size))
+        plt.plot(accuracys_test[i], color = color,
+                 label="Test, batch size = {:d}".format(batch_size))
+
+    plt.legend(loc="lower right")
+    plt.savefig("results/accuracy_batch.pdf")
+
+    plt.figure(figsize=(10,8))
+    plt.title("Cost function for varying batch size")
+    plt.xlabel("Epoch")
+    plt.ylabel("Cost")
+    for i, batch_size in enumerate(batch_sizes):
+        color = color_list[i]
+        plt.plot(costs_train[i], "--", color = color,
+                 label="Train, batch size = {:d}".format(batch_size))
+        plt.plot(costs_test[i], color = color,
+                 label="Test, batch size = {:d}".format(batch_size))
+
+    plt.legend(loc="upper right")
+    plt.savefig("results/cost_batch.pdf")
+
+    """ Testing various regularization params with learning rate 0.1,
+    batch size 100 """
+
+    accuracys_train = []
+    costs_train = []
+    accuracys_test = []
+    costs_test = []
+
+    eta = 0.1
+    batch_size = 100
+    regularization_params = [10**(-i) for i in range(5)]
+    regularization_params.append(0)
+
+    for lmbda in regularization_params:
+        nn = NeuralNetwork(Xtrain, ytrain, layers,
+                           Xtest = Xtest, ytest = ytest)
+        n_batches = int(Xtrain.shape[0]/batch_size)
+        a, b, c, d = nn.fit(n_epochs = 100, eta = eta,
+                            n_batches = n_batches, lmbda = lmbda)
+
+        accuracys_train.append(a)
+        costs_train.append(b)
+        accuracys_test.append(c)
+        costs_test.append(d)
+
+        print("Test accuracy:", nn.accuracy(Xtest, ytest)) # test accuracy after training
+
+    plt.figure(figsize=(10,8))
+    plt.title("Accuracy score for varying reg. parameters, batch size = 100")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    for i, lmbda in enumerate(regularization_params):
+        color = color_list[i]
+        plt.plot(accuracys_train[i], "--", color = color,
+                 label="Train, lambda = {:g}".format(lmbda))
+        plt.plot(accuracys_test[i], color = color,
+                 label="Test, lambda = {:g}".format(lmbda))
+
+    plt.legend(loc="lower right")
+    plt.savefig("results/accuracy_lmbda.pdf")
+
+    plt.figure(figsize=(10,8))
+    plt.title("Cost function for varying reg. parameters, batch size = 100")
+    plt.xlabel("Epoch")
+    plt.ylabel("Cost")
+    for i, lmbda in enumerate(regularization_params):
+        color = color_list[i]
+        plt.plot(costs_train[i], "--", color = color,
+                 label="Train, lambda = {:g}".format(lmbda))
+        plt.plot(costs_test[i], color = color,
+                 label="Test, lambda = {:g}".format(lmbda))
+
+    plt.legend(loc="upper right")
+    plt.savefig("results/cost_lmbda.pdf")
+    plt.show()
 
 """
 logReg = LogisticRegression(n_batches = n_batches)

@@ -9,6 +9,27 @@ class LogisticRegression(MachineLearning):
         self._n_batches = n_batches
 
 
+    def gradient_descent_step(self, X, y, beta, eta, N):
+        """ Gradient descent method for a single step for one batch in
+        stochastic gradient descent
+        X    : feature matrix for current batch
+        y    : targets for current batch
+        beta : current guess
+        eta  : learning rate
+        N    : batch size
+
+        returns:
+        new beta values
+        """
+
+        y_model = np.dot(X, beta) # prediction
+        p = self.sigmoid(y_model)
+
+        dC_dbeta = -np.dot(X.T, (y - p))/N
+
+        return beta - eta*dC_dbeta
+
+
     def SGD(self, X, y, n_epochs, eta = 0.01):
         """ Stochastic gradient descent method for input X and targets y
         input:
