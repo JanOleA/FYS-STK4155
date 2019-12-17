@@ -84,7 +84,7 @@ if __name__ == "__main__":
             plt.plot(x, num_solution, label = "numerical solution")
             plt.plot(x, ana_solution, label = "analytical solution")
             plt.ylim((0,1.2))
-            plt.title(f"t = {t}, dx = {dx}")
+            plt.title(f"t = {t:.3f}, dx = {dx}")
             plt.xlabel("x")
             plt.ylabel("u(x,t)")
             plt.legend()
