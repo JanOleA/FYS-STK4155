@@ -1,16 +1,15 @@
-import warnings
-warnings.filterwarnings('ignore',category=FutureWarning)
-""" disabled warnings because of issues with numpy 1.17+ and TF
-(https://github.com/tensorflow/tensorflow/issues/30427)
-"""
-
-"""
-Inspired by code and examples provided by Kristine Baluka Hein:
+""" Inspired by code and examples provided by Kristine Baluka Hein:
 "Data Analysis and Machine Learning: Using Neural networks to solve ODEs and PDEs":
 https://compphysics.github.io/MachineLearning/doc/pub/odenn/html/._odenn-bs000.html
 
 "Example: Solving the diffusion equation":
 https://github.com/krisbhei/DEnet/blob/master/DNN_Diffeq/example_pde_diffusion.ipynb
+"""
+
+import warnings
+warnings.filterwarnings('ignore',category=FutureWarning)
+""" disabled some warnings because of warning spam with numpy 1.17+ and TF
+(https://github.com/tensorflow/tensorflow/issues/30427)
 """
 
 from analytical import analytical_solution
@@ -50,8 +49,8 @@ def solve_dnn(dx, dt = None, learning_rate = 0.001, num_iter = 1000, num_hidden_
 
     if dt == None:
         dt = 0.5*dx**2
-    N_t = int(np.ceil(1/dt))
-    N_x = (1/dx + 1)
+    N_t = int(np.ceil(1/dt)) + 1
+    N_x = 1/dx + 1
 
     if N_x%1 != 0:
         print("Must be possible to make integer number of spatial points")
@@ -59,6 +58,8 @@ def solve_dnn(dx, dt = None, learning_rate = 0.001, num_iter = 1000, num_hidden_
         sys.exit(1)
 
     N_x = int(N_x)
+
+    print(f"Neural network N_x = {N_x}, N_t = {N_t}")
 
     x_np = np.linspace(0, 1, N_x)
     t_np = np.linspace(0, 1, N_t)
@@ -124,42 +125,76 @@ def solve_dnn(dx, dt = None, learning_rate = 0.001, num_iter = 1000, num_hidden_
 
     return u_dnn, u_analytic, x_np, t_np
 
+
+def MSE_FD(u_finite_diff, fd_t, x):
+    """ Function which calculates the analytical solution and MSE for the
+    finite difference solution at given time points fd_t and positions x
+
+    Separate function is used in order to recalculate u_analytic for this
+    specific case
+    """
+    X, T = np.meshgrid(x, fd_t)
+    u_analytic = analytical_solution(X, T)
+
+    return MSE(u_analytic, u_finite_diff)
+
+
+def R2_FD(u_finite_diff, fd_t, x):
+    """ Function which calculates the analytical solution and R2 score for the
+    finite difference solution at given time points fd_t and positions x
+
+    Separate function is used in order to recalculate u_analytic for this
+    specific case
+    """
+    X, T = np.meshgrid(x, fd_t)
+    u_analytic = analytical_solution(X, T)
+
+    return R2(u_analytic, u_finite_diff)
+
+
 if __name__ == "__main__":
     dx = 0.02
     dt = 0.02
-    learning_rate = 0.005
-    num_iter = 5000
-    num_hidden_neurons = [50, 30]
+    learning_rate = 0.01
+    num_iter = 10000
+    num_hidden_neurons = [30, 10]
 
     print("### Solving using DNN ###")
-    ts = time.time()
+    ts = time.process_time()
     u_dnn, u_analytic, x, t = solve_dnn(dx = dx, dt = dt,
                                         learning_rate = learning_rate,
                                         num_iter = num_iter,
                                         num_hidden_neurons = num_hidden_neurons)
-    time_elapsed = time.time() - ts
+    time_elapsed = time.process_time() - ts
     print(f"DNN time used: {time_elapsed}s")
 
     print("### Solving using finite difference ###")
-    ts = time.time()
+    ts = time.process_time()
     u_finite_diff, fd_t = solve(dx, 1)
-    time_elapsed = time.time() - ts
+    time_elapsed = time.process_time() - ts
     print(f"FD time used: {time_elapsed}s")
 
     skip_points = int(np.round(dt/(fd_t[1] - fd_t[0])))
-    # finite diff calculates more points, so remove in-between points
-    # to only compare the same points for each method
+    """ Finite diff calculates more points, so remove in-between points
+    to only compare for the points that are calculated in the NN version.
+
+    Because of numerical errors, these might not be _exactly_ at the same
+    time values as the calculations from the neural network, so the MSE and R2
+    must be calculated using a separate analytical solution with the correct
+    time values
+    """
     u_finite_diff = u_finite_diff[::skip_points]
+    fd_t = fd_t[::skip_points]
 
     X, T = np.meshgrid(x, t)
 
     diff = np.abs(u_analytic - u_dnn)
-    print("Max absolute difference between analytical solution and DNN = ", np.max(diff))
+    print("Max absolute difference between analytical solution and DNN =", np.max(diff))
     print(f"Total MSE for DNN:               {MSE(u_analytic, u_dnn)}")
-    print(f"Total MSE for finite difference: {MSE(u_analytic, u_finite_diff)}")
+    print(f"Total MSE for finite difference: {MSE_FD(u_finite_diff, fd_t, x)}")
 
     print(f"Total R2 for DNN:               {R2(u_analytic, u_dnn)}")
-    print(f"Total R2 for finite difference: {R2(u_analytic, u_finite_diff)}")
+    print(f"Total R2 for finite difference: {R2_FD(u_finite_diff, fd_t, x)}")
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.gca(projection="3d")

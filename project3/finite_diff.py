@@ -6,7 +6,7 @@ from resources import MSE, R2
 
 
 def solve(dx, T):
-    """ Solver for a specific case of the heat equation:
+    """ Solver for a specific case of the diffusion equation:
     u_t = u_(xx), t > 0, x in [0, 1]
     u(x, 0) = sin(pi*x), 0 < x < 1
     u(0, t) = 0, u(1, t) = 0, t >= 0
@@ -24,8 +24,8 @@ def solve(dx, T):
     """
 
     dt = 0.5*dx**2
-    N = int(np.ceil(T/dt))
-    N_x = (1/dx + 1)
+    N_t = int(np.ceil(T/dt)) + 1
+    N_x = 1/dx + 1
 
     C = dt/dx**2 #0.5
 
@@ -36,13 +36,14 @@ def solve(dx, T):
 
     N_x = int(N_x)
 
-    u_array = np.zeros((N, N_x))
-    t_array = np.zeros(N)
+    u_array = np.zeros((N_t, N_x))
+    t_array = np.zeros(N_t)
 
     x = np.linspace(0, 1, N_x)
     u_array[0] = np.sin(np.pi*x)
 
-    for n in range(N-1):
+    for n in range(N_t - 1):
+        # Vectorized method for the spatial calculation skips one Python loop
         u_array[n + 1, 1:-1] = (C*(u_array[n, 2:]
                                 - 2*u_array[n, 1:-1]
                                 + u_array[n, 0:-2])
@@ -95,5 +96,8 @@ if __name__ == "__main__":
 
         print(f"R2 at t = {times[0]}  = {R2(num_solutions[0], ana_solutions[0])}")
         print(f"R2 at t = {times[1]}  = {R2(num_solutions[1], ana_solutions[1])}\n")
+
+        X, T = np.meshgrid(x, t_array)
+        print(f"Total MSE: = {MSE(u_array, analytical_solution(X, T))}")
 
     plt.show()
