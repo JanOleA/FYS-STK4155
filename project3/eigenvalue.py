@@ -132,7 +132,7 @@ def solve_dnn(A, smallest = False,
         trial = tf.reshape(trial, (N_t, N_x))
         trial_dt = tf.reshape(trial_dt, (N_t, N_x))
 
-        cost = 0
+        cost_t = 0
         for j in range(N_t):
             trial_t = tf.reshape(trial[j], (N_x, 1))
             trial_dt_t = tf.reshape(trial_dt[j], (N_x, 1))
@@ -140,9 +140,9 @@ def solve_dnn(A, smallest = False,
             RHS = f(trial_t, A) - trial_t
 
             err = tf.square(trial_dt_t - RHS)
-            cost += tf.reduce_sum(err)
+            cost_t += tf.reduce_sum(err)
 
-        cost = tf.reduce_sum(cost/(N_x * N_t), name = "cost")
+        cost = tf.reduce_sum(cost_t/(N_x * N_t), name = "cost")
 
 
     with tf.name_scope("train"):
@@ -176,15 +176,16 @@ def solve_dnn(A, smallest = False,
 
 
 if __name__ == "__main__":
+    smallest = True # True = look for smallest eigenvalue, False = look for largest
+
     n = 6
     Q = np.random.rand(n,n)
     A = (Q.T + Q)/2
-    print(A)
 
-    A_neg = -A
+    if smallest:
+        A = -A
 
     A_tf = tf.convert_to_tensor(A, dtype = tf.float64)
-    A_tf_neg = tf.convert_to_tensor(A_neg, dtype = tf.float64)
 
     ts = time.process_time()
     w_np, v_np = np.linalg.eig(A)
@@ -194,13 +195,13 @@ if __name__ == "__main__":
 
     # Neural network computation
     eps = 1e-4
-    t_max = 3
+    t_max = 8
     dt = 0.1
     learning_rate = 1e-3
-    num_hidden_neurons = [20, 20, 20]
+    num_hidden_neurons = [10, 10, 10]
 
     ts = time.process_time()
-    v_dnn, t, i = solve_dnn(A_tf,
+    v_dnn, t, i = solve_dnn(A_tf, smallest = smallest,
                             t_max = t_max,
                             dt = dt,
                             eps = eps,
@@ -209,32 +210,16 @@ if __name__ == "__main__":
                             verbose = True)
     print(f"DNN time: {time.process_time() - ts}")
 
-    max_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
-
-    t_max = 6
-
-    v_dnn, t, i = solve_dnn(A_tf_neg, smallest = True,
-                            t_max = t_max,
-                            dt = dt,
-                            eps = eps,
-                            learning_rate = learning_rate,
-                            num_hidden_neurons = num_hidden_neurons,
-                            verbose = True)
-
-    min_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
+    last_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
 
     print("## Numpy max ##")
     print("v =", v_np[:,max_eig])
     print("w =", w_np[max_eig])
 
-    print("## DNN max ##")
-    print("v =", max_v_dnn)
-    print("w =", compute_eigenvalue(max_v_dnn, A))
-
     print("## Numpy min ##")
     print("v =", v_np[:,min_eig])
     print("w =", w_np[min_eig])
 
-    print("## DNN min ##")
-    print("v =", min_v_dnn)
-    print("w =", compute_eigenvalue(min_v_dnn, A_neg))
+    print("## DNN ##")
+    print("v =", last_v_dnn)
+    print("w =", compute_eigenvalue(last_v_dnn, A))
