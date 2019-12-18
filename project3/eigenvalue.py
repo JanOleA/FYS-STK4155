@@ -41,18 +41,44 @@ def f(v, A):
     return tf.matmul((tf.matmul(vt, v)*A + (1 - tf.matmul(tf.matmul(vt, A), v))*I), v)
 
 
-def solve_dnn(A,
+def compute_eigenvalue(v, A):
+    """ Computes the eigenvalue from the eigenvector v and matrix A """
+    if len(v.shape) < 2:
+        v = v[:,np.newaxis]
+
+    vt = v.T
+
+    num = ((vt @ A) @ v)[0,0]
+    den = (vt @ v)[0,0]
+
+    return num/den
+
+
+def solve_dnn(A, smallest = False,
               t_max = 1,
               dt = 0.1,
               eps = 1e-2,
               learning_rate = 1e-4,
-              num_hidden_neurons = [50]):
+              num_hidden_neurons = [50],
+              verbose = False):
 
     """ Neural network solver for the method prescribed by the Yi et al paper
     for finding the eigenpairs corresponding to the largest and smallest
     eigenvalues for a symmetric n x n matrix A.
 
     Inputs:
+    A               : Matrix to find eigenpairs for
+    smallest        : set True if trying to find the eigenvector for the
+                      smallest eigenvalue (default = False)
+    t_max           : Max time (default = 1)
+    dt              : Time step (default = 0.1)
+    eps             : Cutoff threshold. Stop iterations when error is smaller
+                      than this (default = 0.01)
+    learning_rate   : Learning rate of the optimizer (default = 0.0001)
+    num_hidden_neurons : List containing number of neurons in hidden layers
+                         (default = [50])
+    verbose         : Whether or not to print info every 1000 iterations
+                      (default = False)
     """
     num_hidden_layers = np.size(num_hidden_neurons)
 
@@ -65,8 +91,12 @@ def solve_dnn(A,
 
     x_np = np.linspace(1, N_x, N_x)
     t_np = np.linspace(0, t_max, N_t)
-    print(t_np)
     v0_np = np.random.rand(n) # initial guess
+
+    if smallest:
+        k = -1
+    else:
+        k = 1
 
     X, T = np.meshgrid(x_np, t_np)
     V, T = np.meshgrid(v0_np, t_np)
@@ -95,7 +125,7 @@ def solve_dnn(A,
 
 
     with tf.name_scope("cost"):
-        trial = v0 + dnn_output*t
+        trial = k*v0 + dnn_output*t
 
         trial_dt = tf.gradients(trial, t)
 
@@ -134,7 +164,7 @@ def solve_dnn(A,
             sess.run(training_op)
             i += 1
 
-            if i%1000 == 0:
+            if i%1000 == 0 and verbose:
                 print(f"Training iteration {i}, cost = {cost.eval()}")
 
         print(f"Final cost: {cost.eval():g}")
@@ -151,20 +181,23 @@ if __name__ == "__main__":
     A = (Q.T + Q)/2
     print(A)
 
+    A_neg = -A
+
     A_tf = tf.convert_to_tensor(A, dtype = tf.float64)
+    A_tf_neg = tf.convert_to_tensor(A_neg, dtype = tf.float64)
 
     ts = time.process_time()
     w_np, v_np = np.linalg.eig(A)
     print(f"Numpy time: {time.process_time() - ts}")
-    print(w_np)
-    print(v_np)
+    max_eig = np.argmax(w_np)
+    min_eig = np.argmin(w_np)
 
     # Neural network computation
     eps = 1e-4
-    t_max = 5
+    t_max = 3
     dt = 0.1
     learning_rate = 1e-3
-    num_hidden_neurons = [10, 10, 10]
+    num_hidden_neurons = [20, 20, 20]
 
     ts = time.process_time()
     v_dnn, t, i = solve_dnn(A_tf,
@@ -172,7 +205,36 @@ if __name__ == "__main__":
                             dt = dt,
                             eps = eps,
                             learning_rate = learning_rate,
-                            num_hidden_neurons = num_hidden_neurons)
+                            num_hidden_neurons = num_hidden_neurons,
+                            verbose = True)
     print(f"DNN time: {time.process_time() - ts}")
 
-    print(v_dnn)
+    max_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
+
+    t_max = 6
+
+    v_dnn, t, i = solve_dnn(A_tf_neg, smallest = True,
+                            t_max = t_max,
+                            dt = dt,
+                            eps = eps,
+                            learning_rate = learning_rate,
+                            num_hidden_neurons = num_hidden_neurons,
+                            verbose = True)
+
+    min_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
+
+    print("## Numpy max ##")
+    print("v =", v_np[:,max_eig])
+    print("w =", w_np[max_eig])
+
+    print("## DNN max ##")
+    print("v =", max_v_dnn)
+    print("w =", compute_eigenvalue(max_v_dnn, A))
+
+    print("## Numpy min ##")
+    print("v =", v_np[:,min_eig])
+    print("w =", w_np[min_eig])
+
+    print("## DNN min ##")
+    print("v =", min_v_dnn)
+    print("w =", compute_eigenvalue(min_v_dnn, A_neg))
