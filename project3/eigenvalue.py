@@ -98,6 +98,8 @@ def solve_dnn(A, smallest = False,
     else:
         k = 1
 
+    print(f"k = {k}")
+
     X, T = np.meshgrid(x_np, t_np)
     V, T = np.meshgrid(v0_np, t_np)
 
@@ -182,19 +184,22 @@ if __name__ == "__main__":
     Q = np.random.rand(n,n)
     A = (Q.T + Q)/2
 
-    if smallest:
-        A = -A
-
-    A_tf = tf.convert_to_tensor(A, dtype = tf.float64)
-
     ts = time.process_time()
     w_np, v_np = np.linalg.eig(A)
     print(f"Numpy time: {time.process_time() - ts}")
+
+    if smallest:
+        A = -A
+
+    print(A)
+
+    A_tf = tf.convert_to_tensor(A, dtype = tf.float64)
+
     max_eig = np.argmax(w_np)
     min_eig = np.argmin(w_np)
 
     # Neural network computation
-    eps = 1e-4
+    eps = 1e-3
     t_max = 8
     dt = 0.1
     learning_rate = 1e-3
