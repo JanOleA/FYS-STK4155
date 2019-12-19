@@ -36,7 +36,7 @@ tf.set_random_seed(4155)
 dx_values = [0.1, 0.05, 0.01] #, 0.005, 0.001]
 
 learning_rate = 0.01
-num_iter = 2000
+num_iter = 5000
 
 num_hidden_neurons = [30, 10]
 
@@ -79,6 +79,7 @@ plt.title("Finite difference error evolution")
 plt.xlim((dx[-1], dx[0]))
 plt.xlabel("dx")
 plt.ylabel("MSE")
+plt.savefig("figures/time_FD.pdf")
 
 plt.figure(figsize=(10,10))
 plt.subplot(211)
@@ -92,5 +93,6 @@ plt.title("Neural network error evolution")
 plt.xlim((dx[-1], dx[0]))
 plt.xlabel("dx")
 plt.ylabel("MSE")
+plt.savefig("figures/time_NN.pdf")
 
-plt.show()
+#plt.show()
