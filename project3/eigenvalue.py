@@ -185,9 +185,9 @@ if __name__ == "__main__":
     Q = np.random.rand(n,n)
     A = (Q.T + Q)/2
 
-    ts = time.process_time()
+    ts = time.time()
     w_np, v_np = np.linalg.eig(A)
-    print(f"Numpy time: {time.process_time() - ts}")
+    print(f"Numpy time: {time.time() - ts}")
 
     if smallest:
         A_temp = -A
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     learning_rate = 1e-3
     num_hidden_neurons = [10, 10, 10]
 
-    ts = time.process_time()
+    ts = time.time()
     v_dnn, t, i = solve_dnn(A_tf, smallest = smallest,
                             t_max = t_max,
                             dt = dt,
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                             learning_rate = learning_rate,
                             num_hidden_neurons = num_hidden_neurons,
                             verbose = True)
-    print(f"DNN time: {time.process_time() - ts}")
+    print(f"DNN time: {time.time() - ts}")
 
     last_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
 

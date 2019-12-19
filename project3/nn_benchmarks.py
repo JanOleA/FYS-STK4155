@@ -44,12 +44,12 @@ time_array = np.empty(np.shape(MSE_array))
 for i, learning_rate in enumerate(learning_rates):
     for j, num_iter in enumerate(num_iters):
         print("### Solving using DNN ###")
-        ts = time.process_time()
+        ts = time.time()
         u_dnn, u_analytic, x, t = solve_dnn(dx = dx, dt = dt,
                                             learning_rate = learning_rate,
                                             num_iter = num_iter,
                                             num_hidden_neurons = num_hidden_neurons)
-        time_elapsed = time.process_time() - ts
+        time_elapsed = time.time() - ts
         print(f"LR: {learning_rate}, iter: {num_iter}, DNN time used: {time_elapsed}s")
         print(f"Total MSE for DNN: {MSE(u_analytic, u_dnn)}")
         MSE_array[i,j] = MSE(u_analytic, u_dnn)

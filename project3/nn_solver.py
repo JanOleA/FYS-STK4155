@@ -161,18 +161,18 @@ if __name__ == "__main__":
     num_hidden_neurons = [30, 10]
 
     print("### Solving using DNN ###")
-    ts = time.process_time()
+    ts = time.time()
     u_dnn, u_analytic, x, t = solve_dnn(dx = dx, dt = dt,
                                         learning_rate = learning_rate,
                                         num_iter = num_iter,
                                         num_hidden_neurons = num_hidden_neurons)
-    time_elapsed = time.process_time() - ts
+    time_elapsed = time.time() - ts
     print(f"DNN time used: {time_elapsed}s")
 
     print("### Solving using finite difference ###")
-    ts = time.process_time()
+    ts = time.time()
     u_finite_diff, fd_t = solve(dx, 1)
-    time_elapsed = time.process_time() - ts
+    time_elapsed = time.time() - ts
     print(f"FD time used: {time_elapsed}s")
 
     skip_points = int(np.round(dt/(fd_t[1] - fd_t[0])))
