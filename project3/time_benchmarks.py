@@ -26,14 +26,17 @@ from finite_diff import solve
 
 import tensorflow.compat.v1 as tf
 
+font = {'size'   : 14}
+plt.rc('font', **font)
+
 tf.disable_v2_behavior()
 tf.reset_default_graph()
 tf.set_random_seed(4155)
 
-dx_values = [0.1, 0.05, 0.01, 0.005, 0.001]
+dx_values = [0.1, 0.05, 0.01] #, 0.005, 0.001]
 
 learning_rate = 0.01
-num_iter = 5000
+num_iter = 2000
 
 num_hidden_neurons = [30, 10]
 
@@ -66,25 +69,27 @@ for i, dx in enumerate(dx_values):
 
 plt.figure(figsize=(10,10))
 plt.subplot(211)
-plt.plot(dx_values, FD[0])
+plt.semilogy(dx_values, FD[0])
 plt.title("Finite difference time evolution")
 plt.xlabel("dx")
 plt.ylabel("time [s]")
 plt.subplot(212)
 plt.plot(dx_values, FD[1])
 plt.title("Finite difference error evolution")
+plt.xlim((dx[-1], dx[0]))
 plt.xlabel("dx")
 plt.ylabel("MSE")
 
 plt.figure(figsize=(10,10))
 plt.subplot(211)
-plt.plot(dx_values, NN[0])
+plt.semilogy(dx_values, NN[0])
 plt.title("Neural network time evolution")
 plt.xlabel("dx")
 plt.ylabel("time [s]")
 plt.subplot(212)
 plt.plot(dx_values, NN[1])
 plt.title("Neural network error evolution")
+plt.xlim((dx[-1], dx[0]))
 plt.xlabel("dx")
 plt.ylabel("MSE")
 

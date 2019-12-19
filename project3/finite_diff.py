@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import sys
 from resources import MSE, R2
 
+font = {'size'   : 14}
+plt.rc('font', **font)
 
 def solve(dx, T):
     """ Solver for a specific case of the diffusion equation:
