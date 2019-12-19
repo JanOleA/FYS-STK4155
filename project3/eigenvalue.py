@@ -179,7 +179,7 @@ def solve_dnn(A, smallest = False,
 
 
 if __name__ == "__main__":
-    smallest = False # True = look for smallest eigenvalue, False = look for largest
+    smallest = True # True = look for smallest eigenvalue, False = look for largest
 
     n = 6
     Q = np.random.rand(n,n)
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     # Neural network computation
     eps = 1e-4
-    t_max = 3
+    t_max = 8
     dt = 0.1
     learning_rate = 1e-3
     num_hidden_neurons = [10, 10, 10]
@@ -241,4 +241,13 @@ if __name__ == "__main__":
     for i in range(n):
         plt.plot([0, t_max], [v_np_[i], v_np_[i]], "--", color = "gray")
 
-    plt.show()
+    plt.title("Values for v(t) as t grows")
+    plt.xlabel("t")
+    plt.ylabel("v_1(t), v_2(t), ... , v_n(t)")
+
+    if smallest:
+        plt.savefig("figures/eigvector_smallest.pdf")
+    else:
+        plt.savefig("figures/eigvector_largest.pdf")
+
+    #plt.show()
