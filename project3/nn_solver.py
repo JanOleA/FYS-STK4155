@@ -45,6 +45,7 @@ def solve_dnn(dx, dt = None, learning_rate = 0.001, num_iter = 1000, num_hidden_
     num_hidden_neurons : list containing number of
                          neurons for each hidden layer (default = [50])
     """
+    tf.reset_default_graph()
     num_hidden_layers = np.size(num_hidden_neurons)
 
     if dt == None:
@@ -155,8 +156,8 @@ def R2_FD(u_finite_diff, fd_t, x):
 if __name__ == "__main__":
     dx = 0.02
     dt = 0.02
-    learning_rate = 0.01
-    num_iter = 10000
+    learning_rate = 0.05
+    num_iter = 3000
     num_hidden_neurons = [30, 10]
 
     print("### Solving using DNN ###")

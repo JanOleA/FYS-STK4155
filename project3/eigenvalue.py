@@ -136,6 +136,7 @@ def solve_dnn(A, smallest = False,
 
         cost_t = 0
         for j in range(N_t):
+            # not happy about this loop, there should be a better way
             trial_t = tf.reshape(trial[j], (N_x, 1))
             trial_dt_t = tf.reshape(trial_dt[j], (N_x, 1))
 
@@ -178,7 +179,7 @@ def solve_dnn(A, smallest = False,
 
 
 if __name__ == "__main__":
-    smallest = True # True = look for smallest eigenvalue, False = look for largest
+    smallest = False # True = look for smallest eigenvalue, False = look for largest
 
     n = 6
     Q = np.random.rand(n,n)
@@ -189,18 +190,18 @@ if __name__ == "__main__":
     print(f"Numpy time: {time.process_time() - ts}")
 
     if smallest:
-        A = -A
+        A_temp = -A
 
     print(A)
 
-    A_tf = tf.convert_to_tensor(A, dtype = tf.float64)
+    A_tf = tf.convert_to_tensor(A_temp, dtype = tf.float64)
 
     max_eig = np.argmax(w_np)
     min_eig = np.argmin(w_np)
 
     # Neural network computation
-    eps = 2e-3
-    t_max = 8
+    eps = 1e-4
+    t_max = 3
     dt = 0.1
     learning_rate = 1e-3
     num_hidden_neurons = [10, 10, 10]
