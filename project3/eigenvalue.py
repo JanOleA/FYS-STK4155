@@ -199,7 +199,7 @@ if __name__ == "__main__":
     min_eig = np.argmin(w_np)
 
     # Neural network computation
-    eps = 5e-3
+    eps = 2e-3
     t_max = 8
     dt = 0.1
     learning_rate = 1e-3
