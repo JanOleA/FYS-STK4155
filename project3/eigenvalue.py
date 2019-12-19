@@ -26,7 +26,7 @@ import time
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
-seed = 42
+seed = 4155
 
 tf.set_random_seed(seed)
 np.random.seed(seed)
@@ -179,7 +179,7 @@ def solve_dnn(A, smallest = False,
 
 
 if __name__ == "__main__":
-    smallest = True # True = look for smallest eigenvalue, False = look for largest
+    smallest = False # True = look for smallest eigenvalue, False = look for largest
 
     n = 6
     Q = np.random.rand(n,n)
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     # Neural network computation
     eps = 1e-4
-    t_max = 8
+    t_max = 3
     dt = 0.1
     learning_rate = 1e-3
     num_hidden_neurons = [10, 10, 10]

@@ -11,4 +11,4 @@ Main programs list:
 - eigenvalue.py     - Contains code for computing eigenpairs using a TensorFlow DNN, as well as standard linear algebra methods using Numpy.
 - resources.py      - Contains own MSE and R2 score functions.
 
-Benchmarking programs not included in list yet as structure is not complete.
+Note that some of the heavy computations were done on the UiO ML2 server, which Markus Leira Asprusten helped me with, so the commits of some of the results are shown as being done by him. This only applies to some of the figures and data files that resulted from me running the code on ML2.
