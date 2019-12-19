@@ -33,7 +33,7 @@ tf.disable_v2_behavior()
 tf.reset_default_graph()
 tf.set_random_seed(4155)
 
-dx_values = [0.1, 0.05, 0.01] #, 0.005, 0.001]
+dx_values = [0.1, 0.05, 0.01, 0.005, 0.001]
 
 learning_rate = 0.01
 num_iter = 5000
@@ -76,7 +76,7 @@ plt.ylabel("time [s]")
 plt.subplot(212)
 plt.plot(dx_values, FD[1])
 plt.title("Finite difference error evolution")
-plt.xlim((dx[-1], dx[0]))
+plt.xlim((dx_values[-1], dx_values[0]))
 plt.xlabel("dx")
 plt.ylabel("MSE")
 plt.savefig("figures/time_FD.pdf")
@@ -90,7 +90,7 @@ plt.ylabel("time [s]")
 plt.subplot(212)
 plt.plot(dx_values, NN[1])
 plt.title("Neural network error evolution")
-plt.xlim((dx[-1], dx[0]))
+plt.xlim((dx_values[-1], dx_values[0]))
 plt.xlabel("dx")
 plt.ylabel("MSE")
 plt.savefig("figures/time_NN.pdf")
