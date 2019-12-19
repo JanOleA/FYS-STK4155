@@ -28,6 +28,8 @@ tf.disable_v2_behavior()
 tf.reset_default_graph()
 tf.set_random_seed(4155)
 
+font = {'size'   : 14}
+plt.rc('font', **font)
 
 def solve_dnn(dx, dt = None, learning_rate = 0.001, num_iter = 1000, num_hidden_neurons = [50]):
     """ Solver for a specific case of the diffusion equation using a neural
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     dx = 0.02
     dt = 0.02
     learning_rate = 0.05
-    num_iter = 3000
+    num_iter = 4000
     num_hidden_neurons = [30, 10]
 
     print("### Solving using DNN ###")
@@ -200,7 +202,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(10, 10))
     ax = fig.gca(projection="3d")
     ax.set_title(f"DNN solution, dx = {dx}, hidden neurons: [" + ", ".join(map(str, num_hidden_neurons)) + "]"
-                 + f", learning rate = {learning_rate}, iterations = {num_iter}")
+                 + f",\n learning rate = {learning_rate}, iterations = {num_iter}")
 
     surf = ax.plot_surface(X, T, u_dnn, linewidth = 0, antialiased = False,
                            cmap = cm.viridis)
@@ -212,7 +214,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(10, 10))
     ax = fig.gca(projection="3d")
     ax.set_title(f"Analytic solution, dx = {dx}, hidden neurons: [" + ", ".join(map(str, num_hidden_neurons)) + "]"
-                 + f", learning rate = {learning_rate}, iterations = {num_iter}")
+                 + f",\n learning rate = {learning_rate}, iterations = {num_iter}")
 
     surf = ax.plot_surface(X, T, u_analytic, linewidth = 0, antialiased = False,
                            cmap = cm.viridis)
@@ -224,7 +226,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(10, 10))
     ax = fig.gca(projection="3d")
     ax.set_title(f"Difference, dx = {dx}, hidden neurons: [" + ", ".join(map(str, num_hidden_neurons)) + "]"
-                 + f", learning rate = {learning_rate}, iterations = {num_iter}")
+                 + f",\n learning rate = {learning_rate}, iterations = {num_iter}")
 
     surf = ax.plot_surface(X, T, diff, linewidth = 0, antialiased = False,
                            cmap = cm.viridis)
@@ -243,8 +245,8 @@ if __name__ == "__main__":
         fdf_solution = u_finite_diff[j]
 
         plt.subplot(241 + i)
-        plt.plot(x, fdf_solution, ls = "dashed", label = "finite difference solution")
-        plt.plot(x, dnn_solution, label = "dnn solution")
+        plt.plot(x, fdf_solution, ls = "dashed", label = "FD solution")
+        plt.plot(x, dnn_solution, label = "DNN solution")
         plt.plot(x, ana_solution, label = "analytical solution")
         plt.ylim((0,1.2))
         plt.title(f"t = {t_:.3f}, dx = {dx}")

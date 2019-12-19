@@ -1,6 +1,9 @@
 from analytical import analytical_solution
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import sys
 from resources import MSE, R2
 
@@ -108,6 +111,21 @@ if __name__ == "__main__":
         plt.legend()
 
         plt.savefig(f"figures/finite_diff_2_{int(dx*100):04d}.pdf")
+
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.gca(projection="3d")
+        ax.set_title(f"Difference, dx = {dx}")
+
+        X, T = np.meshgrid(x, t_array)
+
+        diff = np.abs(analytical_solution(X, T) - u_array)
+
+        surf = ax.plot_surface(X, T, diff, linewidth = 0, antialiased = False,
+                               cmap = cm.viridis)
+        ax.set_xlabel("Position $x$")
+        ax.set_ylabel("Time $t$")
+        ax.view_init(elev=5., azim=5)
+        fig.savefig(f"figures/diff_FD_{int(dx*100):04d}.pdf")
 
         print(f"#################### dx = {dx} ####################")
         print(f"MSE at t = {times[0]} = {MSE(num_solutions[0], ana_solutions[0])}")
