@@ -217,7 +217,10 @@ if __name__ == "__main__":
                             verbose = True)
     print(f"DNN time: {time.time() - ts}")
 
-    last_v_dnn = v_dnn[-1]/np.linalg.norm(v_dnn[-1])
+    v_dnn = v_dnn/np.linalg.norm(v_dnn[-1])
+    # scale so that the final element has a norm of 1
+
+    last_v_dnn = v_dnn[-1]
 
     print("## Numpy max ##")
     print("v =", v_np[:,max_eig])
@@ -236,7 +239,7 @@ if __name__ == "__main__":
     if smallest:
         v_np_ = v_np[:,min_eig]
     else:
-        v_np_ = -v_np[:,max_eig]
+        v_np_ = v_np[:,max_eig]
 
     for i in range(n):
         plt.plot([0, t_max], [v_np_[i], v_np_[i]], "--", color = "gray")
