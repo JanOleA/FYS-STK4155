@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     for dx in dx_list:
         u_array, t_array = solve(dx, 1)
-        plt.figure(figsize=(9,6))
+        plt.figure(figsize=(14, 10))
 
         N_x = 1/dx + 1
         x = np.linspace(0, 1, int(N_x))
@@ -89,6 +89,23 @@ if __name__ == "__main__":
             plt.xlabel("x")
             plt.ylabel("u(x,t)")
             plt.legend()
+
+        plt.subplots_adjust(left = 0.05, right = 0.95, wspace = 0.3, hspace = 0.3)
+        plt.savefig(f"figures/finite_diff_{int(dx*100):04d}.pdf")
+
+        plt.figure(figsize=(10,8))
+        plt.subplot(211)
+        plt.title(f"t = {times[0]:.3f}, dx = {dx}")
+        plt.plot(x, num_solutions[0], label = "numerical solution")
+        plt.plot(x, ana_solutions[0], label = "analytical solution")
+        plt.legend()
+        plt.subplot(212)
+        plt.title(f"t = {times[1]:.3f}, dx = {dx}")
+        plt.plot(x, num_solutions[1], label = "numerical solution")
+        plt.plot(x, ana_solutions[1], label = "analytical solution")
+        plt.legend()
+
+        plt.savefig(f"figures/finite_diff_2_{int(dx*100):04d}.pdf")
 
         print(f"#################### dx = {dx} ####################")
         print(f"MSE at t = {times[0]} = {MSE(num_solutions[0], ana_solutions[0])}")

@@ -41,6 +41,7 @@ num_iters = [500, 1000, 2000, 4000, 6000, 8000, 10000]
 MSE_array = np.empty((len(learning_rates), len(num_iters)))
 time_array = np.empty(np.shape(MSE_array))
 
+"""
 for i, learning_rate in enumerate(learning_rates):
     for j, num_iter in enumerate(num_iters):
         print("### Solving using DNN ###")
@@ -56,14 +57,22 @@ for i, learning_rate in enumerate(learning_rates):
         time_array[i,j] = time_elapsed
 
 np.save("data/MSE_array.npy", MSE_array)
-np.save("data/time_array.npy", time_array)
+np.save("data/time_array.npy", time_array)"""
+MSE_array = np.load("data/MSE_array.npy")
+time_array = np.load("data/time_array.npy")
 
 plt.figure()
 sns.heatmap(MSE_array, xticklabels = num_iters, yticklabels = learning_rates,
             cbar = True)
+plt.title("Mean squared error for NN solution")
+plt.xlabel("Number of iterations")
+plt.ylabel("Learning rate")
 plt.savefig("figures/mse_array.pdf")
 plt.figure()
 sns.heatmap(time_array, xticklabels = num_iters, yticklabels = learning_rates,
             cbar = True)
+plt.title("Computation time (s) for NN solution")
+plt.xlabel("Number of iterations")
+plt.ylabel("Learning rate")
 plt.savefig("figures/time_array.pdf")
 #plt.show()
