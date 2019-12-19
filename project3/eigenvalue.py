@@ -189,6 +189,7 @@ if __name__ == "__main__":
     w_np, v_np = np.linalg.eig(A)
     print(f"Numpy time: {time.time() - ts}")
 
+    A_temp = A
     if smallest:
         A_temp = -A
 
@@ -229,3 +230,15 @@ if __name__ == "__main__":
     print("## DNN ##")
     print("v =", last_v_dnn)
     print("w =", compute_eigenvalue(last_v_dnn, A))
+
+    plt.plot(np.linspace(0, t_max, len(v_dnn)), v_dnn)
+
+    if smallest:
+        v_np_ = v_np[:,min_eig]
+    else:
+        v_np_ = -v_np[:,max_eig]
+
+    for i in range(n):
+        plt.plot([0, t_max], [v_np_[i], v_np_[i]], "--", color = "gray")
+
+    plt.show()
